@@ -20,7 +20,7 @@ import (
 
 // "go.mongodb.org/mongo-driver/mongo"
 
-type MongoCon struct {
+type Con struct {
 	log              *slog.Logger // our log interface
 	URL              string
 	CTX              context.Context
@@ -32,7 +32,7 @@ type MongoCon struct {
 }
 
 type MongoDB interface {
-	//NewMongoConnection(string) (*MongoCon, error) // NewMongoConnection-> constructor -> returns instance of MongoCon, error
+	//NewConnection(string) (*Con, error) // NewConnection-> constructor -> returns instance of Con, error
 	Create(string, string, interface{}) (primitive.ObjectID, error) // Create(collection_name, key, value) -> objectid, error
 	Read(string, string) (interface{}, error)                       // Read(collection_name, key, value) -> value, error
 	Update(string, string, interface{}) (bool, error)               // Update(collection_name, key, value) -> ok, error
@@ -54,10 +54,10 @@ func MongoDBCreateDSN(username, password, host, port, database string) string {
 	return mongoDSN
 }
 
-// NewMongoConnection - constructor for our communications with Mongo
-func NewMongoConnection(dsn string, lg *slog.Logger) (*MongoCon, error) {
-	// create instance of MongoConnection and log interface pointer
-	ma := new(MongoCon)
+// NewConnection - constructor for our communications with Mongo
+func NewConnection(dsn string, lg *slog.Logger) (*Con, error) {
+	// create instance of Connection and log interface pointer
+	ma := new(Con)
 	if lg == nil {
 		lg = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	}
@@ -88,35 +88,35 @@ func NewMongoConnection(dsn string, lg *slog.Logger) (*MongoCon, error) {
 }
 
 // CreateVAL -> create value with specified key on ourcollection
-func (mc *MongoCon) Create(collection, key string, value interface{}) (primitive.ObjectID, error) {
+func (mc *Con) Create(collection, key string, value interface{}) (primitive.ObjectID, error) {
 	mc.log.Debug("Creating new object in mongodb...Create")
 	// first actualize collection
 	mc.ActualCollection = mc.CLH.Database(mc.Database).Collection(collection)
 	// now, we use insert1, to future we will make some logic above this package (probably in director)
 	// don't want to use insert many, operation should be atomic! for multi insert we will make other one in future
 	// but first, create and fill document metadata
-	mdoc := newMongoDoc(key, value)
+	mdoc := newMongoDoc(collection, key, value)
 
 	return primitive.NilObjectID, nil
 }
 
 // Read -> read value specified by key
-func (mc *MongoCon) Read(collection, key string) (interface{}, error) {
+func (mc *Con) Read(collection, key string) (interface{}, error) {
 
 	return nil, nil
 }
 
 // Update -> check against old value, in case of difference update value
-func (mc *MongoCon) Update(collection, key string, value interface{}) (bool, error) {
+func (mc *Con) Update(collection, key string, value interface{}) (bool, error) {
 
 	return true, nil
 }
 
-func (mc *MongoCon) Delete(collection, key string) error {
+func (mc *Con) Delete(collection, key string) error {
 
 	return nil
 }
 
-func (mc *MongoCon) Close() error {
+func (mc *Con) Close() error {
 	return mc.CLH.Disconnect(mc.CTX)
 }
