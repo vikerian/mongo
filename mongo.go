@@ -94,6 +94,8 @@ func (mc *MongoCon) Create(collection, key string, value interface{}) (primitive
 	mc.ActualCollection = mc.CLH.Database(mc.Database).Collection(collection)
 	// now, we use insert1, to future we will make some logic above this package (probably in director)
 	// don't want to use insert many, operation should be atomic! for multi insert we will make other one in future
+	// but first, create and fill document metadata
+	mdoc := newMongoDoc(key, value)
 
 	return primitive.NilObjectID, nil
 }
