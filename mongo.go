@@ -108,6 +108,8 @@ func (mc *Con) Create(collection, key string, value interface{}) (primitive.Obje
 
 // Read -> read value specified by key
 func (mc *Con) Read(collection, key string) (interface{}, error) {
+	debugstr := fmt.Sprintf("Read from collection %s by key %s", collection, key)
+	mc.log.Debug(debugstr)
 
 	return nil, nil
 }
