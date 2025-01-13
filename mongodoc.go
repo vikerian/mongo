@@ -8,7 +8,7 @@ import (
 )
 
 type mongoDoc struct {
-	id            uuid.UUID          `bson:"uuid"`
+	uid           uuid.UUID          `bson:"_id"`
 	mongoID       primitive.ObjectID `bson:"mongo_id,omitempty"`
 	collectionSTR string             `bson:"mongo_collection,omitempty"`
 	name          string             `bson:"mongo_name"`
@@ -33,11 +33,11 @@ type Author struct {
 // NewMongoDoc -> create instance of mongo document with basic data filled in
 func newMongoDoc(collection string, docname string, document interface{}) *mongoDoc {
 	mdoc := new(mongoDoc)
-	mdoc.id = uuid.New()
+	mdoc.uid = uuid.New()
 	mdoc.name = docname
 	mdoc.document = document
 	mdoc.ctime = time.Now()
-	mdoc.collection = collection
+	mdoc.collectionSTR = collection
 	return mdoc
 }
 

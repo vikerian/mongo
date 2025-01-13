@@ -97,7 +97,13 @@ func (mc *Con) Create(collection, key string, value interface{}) (primitive.Obje
 	// but first, create and fill document metadata
 	mdoc := newMongoDoc(collection, key, value)
 
-	return primitive.NilObjectID, nil
+	result, err := mc.ActualCollection.InsertOne(mc.CTX, mdoc)
+	if err != nil {
+		errstr := fmt.Sprintf("Error on inserting document: %v", err)
+		return primitive.NilObjectID, errors.New(errstr)
+	}
+
+	return result.InsertedID.(primitive.ObjectID), nil
 }
 
 // Read -> read value specified by key
