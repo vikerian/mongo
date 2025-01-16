@@ -96,7 +96,17 @@ func (mc *Con) Create(collection, key string, value interface{}) (primitive.Obje
 	// now, we use insert1, to future we will make some logic above this package (probably in director)
 	// don't want to use insert many, operation should be atomic! for multi insert we will make other one in future
 	// but first, create and fill document metadata
+<<<<<<< HEAD
 	mdoc := newMongoDoc(collection, key, value)
+=======
+	mdoc := newMongoDoc(key, value)
+	result, err := mc.ActualCollection.InsertOne(mc.CTX, mdoc)
+	if err != nil {
+		errstr := fmt.Sprintf("Error on inserting document: %v", err)
+		mc.log.Error(errstr)
+		return primitive.NilObjectID, err
+	}
+>>>>>>> 9129547 (2025-01-16 001)
 
 	result, err := mc.ActualCollection.InsertOne(mc.CTX, mdoc)
 	if err != nil {
