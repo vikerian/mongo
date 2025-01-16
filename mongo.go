@@ -13,6 +13,7 @@ import (
 	//"go.mongodb.org/mongo-driver/mongo/options"
 	//"go.mongodb.org/mongo-driver/bson/primitive" -> driver using primitive.ObjectId
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -87,7 +88,7 @@ func NewConnection(dsn string, lg *slog.Logger) (*Con, error) {
 	return ma, nil
 }
 
-// CreateVAL -> create value with specified key on ourcollection
+// Create -> create value with specified key on ourcollection
 func (mc *Con) Create(collection, key string, value interface{}) (primitive.ObjectID, error) {
 	mc.log.Debug("Creating new object in mongodb...Create")
 	// first actualize collection
@@ -110,8 +111,17 @@ func (mc *Con) Create(collection, key string, value interface{}) (primitive.Obje
 func (mc *Con) Read(collection, key string) (interface{}, error) {
 	debugstr := fmt.Sprintf("Read from collection %s by key %s", collection, key)
 	mc.log.Debug(debugstr)
+	// first actualize collection
+	mc.ActualCollection = mc.CLH.Database(mc.Database).Collection(collection)
+	var result bson.M
+	err := mc.ActualCollection.FindOne(mc.CTX, key).Decode(&result)
+	if err != nil {
+		errstr := fmt.Sprintf("Error on reading collection, key: %v", err)
+		mc.log.Error(errstr)
+		return nil, errors.New(errstr)
+	}
 
-	return nil, nil
+	return result, nil
 }
 
 // Update -> check against old value, in case of difference update value
