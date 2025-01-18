@@ -126,11 +126,40 @@ func (mc *Con) Read(collection, key string) (interface{}, error) {
 
 // Update -> check against old value, in case of difference update value
 func (mc *Con) Update(collection, key string, value interface{}) (bool, error) {
+	debugstr := fmt.Sprintf("Update data in collection %s identified by key %s", collection, key)
+	mc.log.Debug(debugstr)
+	// first actualize collection
+	mc.ActualCollection = mc.CLH.Database(mc.Database).Collection(collection)
+	// udpate document (as for https://www.mongodb.com/docs/drivers/go/current/quick-reference/ style)
+	//find old values
+	var firstResult interface{}
+	err := mc.ActualCollection.FindOne(mc.CTX, key).Decode(firstResult)
+	if err == mongo.ErrNoDocuments {
+		errstr := fmt.Sprintf("No document with such key exists: %v", err)
+		mc.log.Error(errstr)
+		return false, errors.New(errstr)
+	}
+	if err != nil {
+		errstr := fmt.Sprintf("Error on finding document to update: %v", err)
+		mc.log.Error(errstr)
+		return false, errors.New(errstr)
+	}
+
+	//var UpdateResult interface{}
+	_, err = mc.ActualCollection.UpdateOne(mc.CTX, firstResult.(bson.D), bson.D{{key, value}})
+	if err != nil {
+		errstr := fmt.Sprintf("Error on updating document %v: %v", firstResult.(string), err)
+		mc.log.Error(errstr)
+		return false, errors.New(errstr)
+	}
 
 	return true, nil
 }
 
 func (mc *Con) Delete(collection, key string) error {
+	debugstr := fmt.Sprintf("Delete from collection %s key %s", collection, key)
+	mc.log.Debug(debugstr)
+	mc.ActualCollection = mc.CLH.Database(mc.Database).Collection(collection)
 
 	return nil
 }
